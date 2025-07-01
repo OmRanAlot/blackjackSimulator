@@ -3,13 +3,8 @@ import strategies as strats
 
 players = [
     bj.Player("HiLo", strategy=strats.HiLoStrategy()),
-    bj.Player("Basic Tables", strategy=strats.BasicStrategyTables()),
-    bj.Player("HiLo Agressive", strategy=strats.HiLoStarategyAgressive()),
-    bj.Player("Paroli", strategy=strats.ParoliStarategy()),
-    bj.Player("Martingale", strategy=strats.MartingaleStrategy()),
-    bj.Player("Aggressive", strategy=strats.AlwaysHitUnderX(19)),
-    bj.Player("Conservative", strategy=strats.AlwaysHitUnderX(10)),
-    bj.Player("Control", strategy=strats.BaseStrategy()),
+    bj.Player("HiLo Martingale", strategy=strats.HiLoStrategyMartingale()),
+    bj.Player("HiLo Paroli", strategy=strats.HiLoStrategyParoli()),
 ]
 
 
@@ -21,5 +16,5 @@ for i in range(100000):
     if i % 100 == 0:
         print(f"Completed {i} rounds...")
 
-blackjack.save_stats_to_csv("blackjack_stats.csv")
+blackjack.save_stats_to_csv("blackjack_stats2.csv")
 

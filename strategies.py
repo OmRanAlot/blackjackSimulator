@@ -26,6 +26,18 @@ class BaseStrategy:
             return "double down"
         return "stand"
 
+class MartingaleStrategy(BaseStrategy): #Martingale Betting
+    def place_bet(self, player, true_count=None):
+        if player.loss_streak == 0:
+            return 10
+        return min(player.bet * 2, player.balance)
+
+class ParoliStarategy(BaseStrategy): #Paroli
+    def place_bet(self, player, true_count=None):
+        if player.win_streak == 0:
+            return 10
+        return min(player.bet * 2, player.balance)
+
 class HiLoStrategy(BaseStrategy): #Linear - Basic Card Counting
     def place_bet(self, player, true_count):
         bet = 10 + (true_count - 2) * 5 
@@ -55,17 +67,13 @@ class HiLoStarategyAgressive(HiLoStrategy): #Exponential Betting
         bet = 10 * 2** (true_count - 2)
         return 0 if bet < 0 else bet
 
-class MartingaleStrategy(BaseStrategy): #Martingale Betting
-    def place_bet(self, player, true_count=None):
-        if player.loss_streak == 0:
-            return 10
-        return min(player.bet * 2, player.balance)
+class HiLoStrategyMartingale(MartingaleStrategy, HiLoStrategy):
+    def place_bet(self, player, true_count):
+        return super().place_bet(player, true_count)
 
-class ParoliStarategy(BaseStrategy): #Paroli
-    def place_bet(self, player, true_count=None):
-        if player.win_streak == 0:
-            return 10
-        return min(player.bet * 2, player.balance)
+class HiLoStrategyParoli(ParoliStarategy, HiLoStrategy):
+    def place_bet(self, player, true_count):
+        return super().place_bet(player, true_count)
 
 class AlwaysHitUnderX(BaseStrategy):
     def __init__(self, x):

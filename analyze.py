@@ -1,34 +1,28 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-df = pd.read_csv("blackjack_stats.csv")
+df = pd.read_csv("blackjack_stats2.csv")
 
 win_count = (df['won'] == 1).sum()
 
-control = df[df['name'] == 'Control']
-Conservative = df[df['name'] == 'Conservative']
-Aggressive = df[df['name'] == 'Aggressive']
-HiLo = df[df['name'] == 'HiLo']
-HiLo_Agressive = df[df['name'] == 'HiLo Agressive']
-Paroli = df[df['name'] == 'Paroli']
-Martingale = df[df['name'] == 'Martingale']
-Basic_Tables = df[df['name'] == 'Basic Tables']
+hilo = df[df['name'] == 'HiLo']
+hilo_martingale = df[df['name'] == 'HiLo Martingale']
+hilo_paroli = df[df['name'] == 'HiLo Paroli']
 
 plt.figure(figsize=(15, 5))
-# plt.plot(control['round'], control['balance'])
-# plt.plot(Conservative['round'], Conservative['balance'])
-# plt.plot(Aggressive['round'], Aggressive['balance'])
-# plt.plot(HiLo['round'], HiLo['balance'])
-# plt.plot(HiLo_Agressive['round'], HiLo_Agressive['balance'])
-plt.plot(Paroli['round'], Paroli['balance'])
-plt.plot(Martingale['round'], Martingale['balance'])
-# plt.plot(Basic_Tables['round'], Basic_Tables['balance'])
+
+plt.plot(hilo_martingale['round'], hilo_martingale['bet'])
+plt.plot(hilo_martingale['round'], hilo_martingale['balance'])
+
+plt.plot(hilo_paroli['round'], hilo_paroli['balance'])
+plt.plot(hilo_paroli['round'], hilo_paroli['bet'])
+
 
 plt.xlabel("Rounds")
 plt.ylabel("Balance")
-plt.title("Control Player")
+plt.title("Balance Over Time")
 
-plt.legend(['Paroli', 'Martingale'])
+plt.legend(['HiLo martingale bets','HiLo Martingale', 'HiLo Paroli', "hilo paroli bet"])
 
 plt.tight_layout()
 plt.show()
@@ -41,6 +35,6 @@ plt.show()
 change number of decks
 number of players
 
-
+GOAL:PULL A Profit
 
 '''
