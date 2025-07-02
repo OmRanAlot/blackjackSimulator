@@ -60,7 +60,7 @@ class Game:
     def __init__(self, number_of_players, decks=6, players=None, double_after_split=True):
         self.number_of_decks = decks
         self.deck = self.generate_decks(decks)
-        self.reshuffle_threshold = 52  # Reshuffle when fewer than 1 deck remains
+        self.reshuffle_threshold = 52*2  # Reshuffle when fewer than 1 deck remains
         self.dealer = Player(name="Dealer")
         self.players = players if players is not None else [Player(f"Player {i+1}") for i in range(number_of_players)]
         self.number_of_players = len(self.players)
@@ -170,7 +170,7 @@ class Game:
                     'lost': lost,
                     'tied': tied,
                     'split': 1 if len(player.hands) > 1 else 0,
-                    'doubled_down': 1 if player.bets[hand_index] > (player.bet / len(player.hands)) else 0,
+                    'doubled_down':  1 if player.bets[hand_index] == 2 * (player.bet if len(player.hands) == 1 else player.bets[hand_index]) else 0,
                     'bet': player.bets[hand_index] if hand_index < len(player.bets) else player.bet,
                     'player_score': player_score,
                     'dealer_score': dealer_score,
@@ -236,7 +236,6 @@ class Game:
         if len(self.deck) < self.reshuffle_threshold:
             self.deck = self.generate_decks(self.number_of_decks)
             self.running_count = 0
-            print("Reshuffling deck...")
 
     def play(self):
         # Check if we need to reshuffle before starting a new round
@@ -286,7 +285,7 @@ class Game:
         # Reset hands for next round
         self.reset_game()
 
-
+        
 
 
 

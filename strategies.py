@@ -38,10 +38,26 @@ class ParoliStarategy(BaseStrategy): #Paroli
             return 10
         return min(player.bet * 2, player.balance)
 
+# ^ Not gonna work over time bc blackjack is slightly rigged aginst YOU
+
+class AdaptativeBetting(BaseStrategy):
+    def place_bet(self, player, true_count):
+        if true_count <= 1:
+            return 1  # Flat bet when deck isn't favorable
+        elif true_count == 2:
+            return 2
+        elif true_count == 3:
+            return 5
+        elif true_count == 4:
+            return 10
+        elif true_count >= 5:
+            return min(player.balance * 0.05, 20)  # Cap risk
+
+
 class HiLoStrategy(BaseStrategy): #Linear - Basic Card Counting
     def place_bet(self, player, true_count):
         bet = 10 + (true_count - 2) * 5 
-        return 0 if bet < 0 else bet
+        return 1 if bet < 0 else bet
 
     def decide_hit(self, player, dealer_card, true_count, hand_index=0):
         return true_count > 2
@@ -53,6 +69,13 @@ class HiLoStrategy(BaseStrategy): #Linear - Basic Card Counting
             return "hit"
         return "stand"
 
+class HiLoAdaptiveBetting(AdaptativeBetting, HiLoStrategy): #Optimized Betting
+    def place_bet(self, player, true_count):
+        return super().place_bet(player, true_count)
+
+    def decide_hit(self, player, dealer_card, true_count, hand_index=0):
+        return player.get_score() < 17
+    
 class HiLoStarategyAdvanced(HiLoStrategy): #Controlled Betting
     def place_bet(self, player, true_count):
         max_bet = 200
@@ -276,4 +299,7 @@ class BasicStrategyTables(BaseStrategy):
 
     def place_bet(self, player, true_count):
         return 10
-        
+
+class AdaptiveBasicStrategyTables(AdaptativeBetting, BasicStrategyTables):
+    def place_bet(self, player, true_count):
+        return super().place_bet(player, true_count)      
