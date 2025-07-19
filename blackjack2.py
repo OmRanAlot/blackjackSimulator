@@ -135,6 +135,7 @@ class Game:
                     won, lost, tied = 0, 1, 0
                     player.loss_streak += 1
                     player.win_streak = 0
+                    
                 elif is_blackjack and not (dealer_score == 21 and len(self.dealer.hands[0]) == 2):
                     # Player has blackjack and dealer doesn't - 3:2 payout
                     bet_won = int(player.bets[hand_index] * 1.5) if hand_index < len(player.bets) else 0
@@ -173,10 +174,14 @@ class Game:
                     'doubled_down':  1 if player.bets[hand_index] == 2 * (player.bet if len(player.hands) == 1 else player.bets[hand_index]) else 0,
                     'bet': player.bets[hand_index] if hand_index < len(player.bets) else player.bet,
                     'player_score': player_score,
+                    'player_hand': player.hands[hand_index],
                     'dealer_score': dealer_score,
                     'dealer_bust': 1 if dealer_bust else 0,
                     'player_bust': 1 if player_bust else 0,
-                    'blackjack': 1 if player_score == 21 and len(player.hands[hand_index]) == 2 else 0
+                    'blackjack': 1 if player_score == 21 and len(player.hands[hand_index]) == 2 else 0,
+                    'dealer_hand': self.dealer.hands[0],
+                    'running_count':self.running_count,
+                    "decks": self.number_of_decks,
                 })
     
     def get_stats_dataframe(self):
@@ -192,6 +197,9 @@ class Game:
         df.to_csv(filename, index=False)
         print(f"Statistics saved to {filename}")
         return df
+
+    def save_stats_to_array(self):
+        return self.stats
 
     def split_hand(self, player, hand_index=0):
         """Split player's hand into two hands"""

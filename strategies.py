@@ -1,8 +1,22 @@
+"""
+Blackjack Strategy Implementations
+---------------------------------
+This module contains various blackjack playing strategies, including:
+- Basic strategy
+- Card counting systems (Hi-Lo)
+- Betting strategies (Martingale, Paroli, etc.)
+- Adaptive strategies that adjust based on game state
+
+Reference: https://www.qfit.com/card-counting-systems.htm
+"""
 import math
-#Strategies
-#https://www.qfit.com/card_counting_systems.htm
 
 class BaseStrategy:
+    """
+    Base class for all blackjack strategies.
+    Provides default implementations for all strategy decisions.
+    Subclasses should override these methods to implement specific strategies.
+    """
     def place_bet(self, player, true_count):
         return 10  # default flat bet
 
@@ -26,13 +40,27 @@ class BaseStrategy:
             return "double down"
         return "stand"
 
-class MartingaleStrategy(BaseStrategy): #Martingale Betting
+class MartingaleStrategy(BaseStrategy):
+    """
+    Martingale Betting Strategy
+    --------------------------
+    Doubles the bet after each loss, resets to base bet after a win.
+    This is a progressive betting system where losses are recouped by doubling bets.
+    Note: High risk of large losses during losing streaks.
+    """
     def place_bet(self, player, true_count=None):
         if player.loss_streak == 0:
             return 10
         return min(player.bet * 2, player.balance)
 
-class ParoliStarategy(BaseStrategy): #Paroli
+class ParoliStarategy(BaseStrategy):
+    """
+    Paroli Betting Strategy
+    ----------------------
+    Also known as the Reverse Martingale. Doubles the bet after each win,
+    resets to base bet after a loss. Aims to capitalize on winning streaks
+    while limiting losses during losing streaks.
+    """
     def place_bet(self, player, true_count=None):
         if player.win_streak == 0:
             return 10
@@ -40,7 +68,14 @@ class ParoliStarategy(BaseStrategy): #Paroli
 
 # ^ Not gonna work over time bc blackjack is slightly rigged aginst YOU
 
-class AdaptativeBetting(BaseStrategy):
+class BettingBasedOnCount(BaseStrategy):
+    """
+    Adaptive Betting Strategy
+    -----------------------
+    Adjusts bet size based on the true count (card counting).
+    Bets more when the count is favorable (high cards remaining).
+    Implements a simple progressive betting scale based on true count.
+    """
     def place_bet(self, player, true_count):
         if true_count <= 1:
             return 1  # Flat bet when deck isn't favorable
@@ -53,8 +88,18 @@ class AdaptativeBetting(BaseStrategy):
         elif true_count >= 5:
             return min(player.balance * 0.05, 20)  # Cap risk
 
-
-class HiLoStrategy(BaseStrategy): #Linear - Basic Card Counting
+#Decided ot hit based on true count
+#adjusted to hit based on true count
+class HiLo(BaseStrategy):
+    """
+    Hi-Lo Card Counting Strategy
+    ---------------------------
+    Implements the Hi-Lo card counting system with basic strategy.
+    - Cards 2-6: +1
+    - Cards 7-9: 0
+    - Cards 10-Ace: -1
+    Adjusts playing decisions based on the running count.
+        """
     def place_bet(self, player, true_count):
         bet = 10 + (true_count - 2) * 5 
         return 1 if bet < 0 else bet
@@ -68,36 +113,7 @@ class HiLoStrategy(BaseStrategy): #Linear - Basic Card Counting
         if self.decide_hit(player, dealer_card, true_count, hand_index):
             return "hit"
         return "stand"
-
-class HiLoAdaptiveBetting(AdaptativeBetting, HiLoStrategy): #Optimized Betting
-    def place_bet(self, player, true_count):
-        return super().place_bet(player, true_count)
-
-    def decide_hit(self, player, dealer_card, true_count, hand_index=0):
-        return player.get_score() < 17
     
-class HiLoStarategyAdvanced(HiLoStrategy): #Controlled Betting
-    def place_bet(self, player, true_count):
-        max_bet = 200
-        bet = 10 + (true_count - 2) * 5 
-        return min(min(player.balance*0.05,bet), max_bet)
-    
-    def decide_hit(self, player, dealer_card, true_count, hand_index=0):
-        return true_count > 2
-
-class HiLoStarategyAgressive(HiLoStrategy): #Exponential Betting
-    def place_bet(self, player, true_count):
-        bet = 10 * 2** (true_count - 2)
-        return 0 if bet < 0 else bet
-
-class HiLoStrategyMartingale(MartingaleStrategy, HiLoStrategy):
-    def place_bet(self, player, true_count):
-        return super().place_bet(player, true_count)
-
-class HiLoStrategyParoli(ParoliStarategy, HiLoStrategy):
-    def place_bet(self, player, true_count):
-        return super().place_bet(player, true_count)
-
 class AlwaysHitUnderX(BaseStrategy):
     def __init__(self, x):
         self.x = x              
@@ -109,6 +125,13 @@ class AlwaysSplit(BaseStrategy):
         return True
 
 class BasicStrategyTables(BaseStrategy):
+    """
+    Basic Strategy Implementation
+    ---------------------------
+    Implements standard blackjack basic strategy, which is the
+    mathematically optimal way to play each hand against any dealer upcard.
+    Based on standard strategy tables used in casinos.
+    """
     def _get_card_rank(self, card):
         return card.split("_")[1]
     
@@ -300,6 +323,3 @@ class BasicStrategyTables(BaseStrategy):
     def place_bet(self, player, true_count):
         return 10
 
-class AdaptiveBasicStrategyTables(AdaptativeBetting, BasicStrategyTables):
-    def place_bet(self, player, true_count):
-        return super().place_bet(player, true_count)      
