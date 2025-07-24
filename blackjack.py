@@ -1,5 +1,7 @@
 import random
 import pandas as pd
+import sys
+
 
 class Hand:
     def __init__(self):
@@ -151,7 +153,7 @@ class Game:
 
         self.stats = []
 
-        self.percent_needed_reshuffle = .25
+        self.percent_needed_reshuffle = .40
     
     def generate_deck(self, number_of_decks):
         """Create a shuffled deck with the specified number of decks."""
@@ -215,8 +217,7 @@ class Game:
             return 0
         return self.running_count / remaining_decks
 
-    def true_count(self):
-        
+    def true_count(self):  
         return self.get_true_count()
 
     def determine_winners(self):
@@ -285,6 +286,7 @@ class Game:
     def reshuffle(self):
         """Reshuffle the deck and reset count"""
         self.deck = self.generate_deck(self.total_cards // 52)
+        print("reshuffling!", file=sys.stdout)
         self.running_count = 0
         self.cards_dealt = 0
 
@@ -292,6 +294,8 @@ class Game:
         """Play a complete round of blackjack"""
         if self.needs_new_deck(self.percent_needed_reshuffle):
             self.reshuffle()
+
+        # print("cards in deck: ", len(self.deck), file=sys.stdout)
 
         #clear any exisiting hands
         for player in self.players:
@@ -313,7 +317,7 @@ class Game:
                 hand = player.hands[hand_index]
                
                 while hand.is_active and not hand.is_busted():
-                    
+                    # print(len(self.deck))
                     choice = player.strategy.play_turn(
                         hand=hand,
                         dealer_card=self.dealer_card,
@@ -321,12 +325,17 @@ class Game:
                         )
                     
                     if choice == "double":
+                        # print("DOUBLING cards in deck: ", len(self.deck), file=sys.stdout)
                         card = self.deck.pop()
-                        if player.double_down(card, hand_index):
-                            self.update_count(card)
-                        
+                        player.balance -= hand.bet
+                        hand.bet *= 2
+                        hand.is_active = False
+                        hand.add_card(card)
+                        self.update_count(card)
+                        break
                     elif choice == "split":
                         if player.split(hand_index):
+                            # print("splitting--------------------------------", file=sys.stdout)
                             # Give one card to each split hand
                             card1 = self.deck.pop()
                             player.hit(card1, hand_index)
@@ -335,12 +344,14 @@ class Game:
                             card2 = self.deck.pop()
                             player.hit(card2, hand_index + 1)
                             self.update_count(card2)
-                        else:
-                            # Can't split, treat as hit
-                            card = self.deck.pop()
-                            player.hit(card, hand_index)
-                            self.update_count(card)
+                        # else:
+                        #     # Can't split, treat as hit
+                        #     print("HITTING cards in deck: ", len(self.deck), file=sys.stdout)
+                        #     card = self.deck.pop()
+                        #     player.hit(card, hand_index)
+                        #     self.update_count(card)
                     elif choice == "hit":
+                        # print("HITTING cards in deck: ", len(self.deck), file=sys.stdout)
                         card = self.deck.pop()
                         player.hit(card, hand_index)
                         self.update_count(card)
@@ -361,8 +372,6 @@ class Game:
         results, dealer_score = self.determine_winners()
         
         for player in self.players:
-            
-
             for i, hand in enumerate(player.hands):
                 # print((results[player.name][i]["result"]))
                 # print(f"{player.name} - Balance: ${player.balance}")
@@ -398,19 +407,19 @@ class Game:
 
 if __name__ == "__main__":
     # Import your strategies here
-    from strategies import BaseStrategy  
+    from strategies import BasicStrategyCharts  
     
     # Create players with your strategies
     players = [
-        Player(strategy=BaseStrategy(), name="Alice", balance=1000),
-        Player(strategy=BaseStrategy(), name="Bob", balance=1000),
+        Player(strategy=BasicStrategyCharts(), name="Alice", balance=1000),
+        Player(strategy=BasicStrategyCharts(), name="Bob", balance=1000),
     ]
     
     # Create game with 6 decks
     game = Game(6, players)
     results = []
     # Play 5 rounds
-    for round_num in range(1, 6):
+    for round_num in range(1, 100):
         print(f"\n--- Round {round_num} ---")
         game.play_round(round_num)
         # print(game.get_stats())
